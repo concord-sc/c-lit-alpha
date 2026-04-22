@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONCORD | LENDER INTERNAL TOOL</title>
+    <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/696023487059154b5cfb7860/698e84a757bbd3e3683dee2a_favicon-google.png">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #020101;
+            --concord-crimson: #9e0b0f;
+            --concord-orange: #d16b1d;
+            --glass: rgba(6, 2, 2, 0.98);
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background-color: var(--void); color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+        }
+
+        canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        #matrix-canvas { opacity: 0.5; }
+        #burst-canvas { z-index: 100; pointer-events: none; }
+
+        /* Updated Banner: Centralized Segments and Red 1px Border */
+        #status-banner {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 200;
+            background: var(--concord-crimson);
+            color: white;
+            border-bottom: 1px solid #ff0000;
+            display: none; 
+            justify-content: center; /* Brings segments together */
+            padding: 5px 0;
+            font-family: 'Orbitron'; font-size: 9px;
+            letter-spacing: 1.5px;
+        }
+
+        .banner-inner {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            width: 100%;
+            max-width: 900px; /* Limits spread of elements */
+            align-items: center;
+        }
+
+        #terminal-footer {
+            position: fixed; left: 0; right: 0; bottom: 0; height: 35px;
+            z-index: 200; display: grid; grid-template-columns: 1fr 1fr 1fr;
+            align-items: center; padding: 0 20px; font-family: 'Orbitron'; font-size: 9px;
+            background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(209, 107, 29, 0.3);
+        }
+
+        .segment-left { text-align: left; padding-left: 20px; }
+        .segment-center { text-align: center; white-space: nowrap; }
+        .segment-right { text-align: right; padding-right: 20px; }
+        
+        #status-banner b { color: #fff; }
+        #banner-ip-sub { display: block; font-size: 8px; opacity: 0.8; margin-top: 2px; }
+
+        .status-dot {
+            height: 6px; width: 6px; background-color: var(--concord-orange);
+            border-radius: 50%; display: inline-block;
+            margin-right: 8px; animation: blink 1.5s infinite;
+        }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        #logo-trigger {
+            position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 112px; height: 112px; z-index: 101; cursor: pointer;
+            opacity: 0; animation: logoFadeIn 2s forwards, logoPulse 3s ease-in-out infinite;
+        }
+        @keyframes logoFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #view-wrapper {
+            position: relative; z-index: 50; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #login-gate {
+            width: 420px; padding: 50px; background: var(--glass);
+            border-left: 4px solid var(--concord-crimson);
+        }
+
+        #content-frame {
+            position: fixed; top: 42px; left: 0; right: 0; bottom: 0;
+            width: 100%; height: calc(100% - 42px);
+            background: var(--void); z-index: 40;
+            display: none; border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="error-overlay">
+    <h1>CRITICAL FAILURE</h1>
+    <p id="error-msg">ACCESS_CREDENTIALS_MISSING</p>
+</div>
+
+<div id="status-banner">
+    <div class="banner-inner">
+        <div class="segment-left">ID <b id="banner-user">---</b></div>
+        <div class="segment-center">
+            CONCORD <b>LENDER INTERNAL TOOL</b>
+            <span id="banner-ip-sub">0.0.0.0</span>
+        </div>
+        <div class="segment-right" id="display-clock">00:00:00</div>
+    </div>
+</div>
+
+<canvas id="matrix-canvas"></canvas>
+<canvas id="burst-canvas"></canvas>
+
+<div id="logo-trigger">
+    <img id="logo-img" src="https://cdn.prod.website-files.com/696023487059154b5cfb7860/698e84a757bbd3e3683dee2a_favicon-google.png">
+</div>
+
+<div id="view-wrapper">
+    <div id="login-gate">
+        <div class="sys-info">
+            NETWORK_IP: <span id="ip-address" style="color: var(--concord-crimson)">FETCHING...</span>
+        </div>
+        <form id="login-form" onsubmit="attemptLogin(event)" novalidate>
+            <input type="text" id="interlink-id" placeholder="INTERLINK ID" style="width:100%; padding:14px; background:#0a0a0a; border:1px solid #222; color:var(--concord-orange); margin-bottom:20px;">
+            <input type="password" id="passkey" placeholder="PASSWORD" style="width:100%; padding:14px; background:#0a0a0a; border:1px solid #222; color:var(--concord-orange); margin-bottom:20px;">
+            <button type="submit" id="enterBtn">LOG IN</button>
+        </form>
+    </div>
+</div>
+
+<iframe id="content-frame"></iframe>
+
+<div id="terminal-footer">
+    <div class="segment-left"><span class="status-dot"></span>SYS: <b>ON</b></div>
+    <div class="segment-center"><strong>© 2026 CONCORD FINANCE LLC</strong></div>
+    <div class="segment-right">- NOT LOGGED IN</div>
+</div>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const frame = document.getElementById('content-frame');
+    const banner = document.getElementById('status-banner');
+    const footer = document.getElementById('terminal-footer');
+
+    // 17k Hertz Hourly Chime (Beep-Beep-Beep)
+    function playHourlyChime() {
+        const freq = 17000;
+        const beepCount = 3;
+        const beepDuration = 0.08;
+        const pause = 0.1;
+
+        for (let i = 0; i < beepCount; i++) {
+            const startTime = audioCtx.currentTime + (i * (beepDuration + pause));
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
+            gain.gain.linearRampToValueAtTime(0, startTime + beepDuration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + beepDuration);
+        }
+    }
+
+    function checkHourly() {
+        const now = new Date();
+        if (now.getMinutes() === 0 && now.getSeconds() === 0) {
+            playHourlyChime();
+        }
+    }
+
+    const _0x1a2b = "Q29uY29yZDIwMjYh"; 
+
+    function playTerrorSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const gain = audioCtx.createGain();
+        gain.connect(audioCtx.destination);
+        if (type === 'access') { 
+            const osc1 = audioCtx.createOscillator();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc1.frequency.exponentialRampToValueAtTime(1500, audioCtx.currentTime + 0.1);
+            osc1.connect(gain); gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            osc1.start(); osc1.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
+    // Matrix Logic
+    const mCanvas = document.getElementById('matrix-canvas');
+    const mCtx = mCanvas.getContext('2d');
+    mCanvas.width = window.innerWidth; mCanvas.height = window.innerHeight;
+    const drops = new Array(Math.floor(mCanvas.width / 16)).fill(-1);
+    function drawMatrix() {
+        mCtx.fillStyle = 'rgba(2, 1, 1, 0.15)';
+        mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+        mCtx.font = '16px monospace'; mCtx.fillStyle = '#c10d12';
+        drops.forEach((y, i) => {
+            if (y >= 0) {
+                mCtx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), i * 16, y * 16);
+                drops[i]++;
+                if (drops[i] * 16 > mCanvas.height) drops[i] = -1;
+            }
+            if (Math.random() > 0.98) drops[i] = 0;
+        });
+    }
+    setInterval(drawMatrix, 40);
+
+    document.getElementById('logo-trigger').onclick = function() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => {
+            document.getElementById('ip-address').innerText = d.ip;
+            document.getElementById('banner-ip-sub').innerText = d.ip; 
+        }).catch(() => {
+            document.getElementById('ip-address').innerText = "127.0.0.1";
+            document.getElementById('banner-ip-sub').innerText = "127.0.0.1";
+        });
+        document.getElementById('login-gate').style.display = 'block';
+        this.style.display = 'none';
+    };
+
+    function attemptLogin(event) {
+        if (event) event.preventDefault();
+        const p = document.getElementById('passkey').value;
+        const interlink = document.getElementById('interlink-id').value;
+        if (btoa(p) === _0x1a2b) {
+            playTerrorSound('access');
+            document.getElementById('banner-user').innerText = interlink.toUpperCase();
+            document.getElementById('view-wrapper').style.display = 'none';
+            banner.style.display = 'flex'; 
+            frame.style.display = 'block';
+        }
+    }
+
+    setInterval(() => { 
+        const now = new Date();
+        document.getElementById('display-clock').innerText = now.toLocaleTimeString();
+        checkHourly();
+    }, 1000);
+</script>
+</body>
+</html>
