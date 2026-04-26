@@ -7,13 +7,13 @@
 
 <script>
     if (sessionStorage.getItem('crf_verified') !== 'true') {
-        window.location.replace('index.html');
+        // window.location.replace('index.html');
     }
 </script>
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
 <style>
+    /* Variables */
     :root {
         --bg-color: #eef2f5;
         --container-bg: #ffffff;
@@ -25,6 +25,11 @@
         --footer-bg: #f1f4f7;
         --accent-color: #d16116;
         --input-bg: #ffffff;
+        
+        /* Glassmorphism Vars */
+        --glass-bg: rgba(255, 255, 255, 0.2);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: rgba(0, 0, 0, 0.1);
     }
 
     body.dark-mode {
@@ -37,8 +42,13 @@
         --header-bg: #7a3a0c;
         --footer-bg: #252525;
         --input-bg: #3d3d3d;
+        
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-shadow: rgba(0, 0, 0, 0.3);
     }
 
+    /* Base Layout */
     body {
         font-family: 'Segoe UI', Tahoma, sans-serif;
         background: var(--bg-color);
@@ -51,6 +61,131 @@
         overflow: hidden;
     }
 
+    /* Notifications / Toasts - Stackable */
+    #toast-container {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        width: 90%;
+        max-width: 350px;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .toast {
+        background: rgba(20, 20, 20, 0.95);
+        color: white;
+        padding: 14px 20px;
+        border-radius: 16px;
+        font-weight: 500;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        text-align: center;
+        font-size: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.25); 
+        animation: stylishExitNoBlur 5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .alarm-toast {
+        background: rgba(139, 0, 0, 0.9) !important;
+        border: 1px solid #ff4d4d !important;
+        font-family: 'Courier New', Courier, monospace;
+        animation: pulseRedToast 0.5s infinite alternate !important;
+    }
+
+    @keyframes pulseRedToast {
+        from { box-shadow: 0 0 10px #ff0000; }
+        to { box-shadow: 0 0 25px #ff0000; }
+    }
+
+    @keyframes stylishExitNoBlur {
+        0% { transform: translateY(-150%) scale(0.9); opacity: 0; }
+        10% { transform: translateY(0) scale(1); opacity: 1; }
+        90% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-25px) scale(0.85); opacity: 0; }
+    }
+
+    /* Cinematic Elements & Glitch */
+    #cinematic-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: black;
+        z-index: 99999;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .glitch-active {
+        animation: glitch-skew 0.2s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch-skew {
+        0% { transform: skew(0deg); filter: hue-rotate(0deg); }
+        20% { transform: skew(5deg); filter: hue-rotate(90deg); }
+        40% { transform: skew(-5deg); }
+        60% { transform: skew(20deg); }
+        100% { transform: skew(0deg); filter: contrast(200%); }
+    }
+
+    .shut-off {
+        animation: shut-off-anim 0.4s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+
+    @keyframes shut-off-anim {
+        0% { transform: scaleY(1) scaleX(1); }
+        50% { transform: scaleY(0.01) scaleX(1); }
+        100% { transform: scaleY(0) scaleX(0); opacity: 0; }
+    }
+
+    #alien-screen {
+        display: none;
+        color: #00ffcc;
+        font-family: 'Courier New', Courier, monospace;
+        text-align: center;
+    }
+
+    .alien-symbol {
+        font-size: 50px;
+        margin: 20px;
+        display: inline-block;
+        animation: alien-flicker 1s infinite;
+    }
+
+    @keyframes alien-flicker {
+        0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #00ffcc); }
+        50% { opacity: 0.3; filter: drop-shadow(0 0 2px #00ffcc); }
+    }
+
+    .loading-bar {
+        width: 300px;
+        height: 2px;
+        background: rgba(0, 255, 204, 0.2);
+        margin: 20px auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .loading-bar::after {
+        content: '';
+        position: absolute;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: #00ffcc;
+        animation: slide-load 7s linear forwards;
+    }
+
+    @keyframes slide-load { to { left: 0; } }
+
+    /* Layout Elements */
     .top-section {
         flex-shrink: 0;
         padding: 20px 20px 10px 20px;
@@ -72,13 +207,15 @@
         border: 1px solid var(--border-color);
         background: var(--container-bg);
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 16px; 
+        overflow: hidden;
     }
 
     .header {
         background: var(--header-bg);
         color: #fff;
         text-align: center;
-        padding: 2px;
+        padding: 4px;
         text-transform: uppercase;
         font-weight: bold;
     }
@@ -86,6 +223,18 @@
     .row {
         display: flex;
         border-top: 1px solid var(--border-color);
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        max-height: 500px; 
+        opacity: 1;
+    }
+
+    .row.hidden {
+        display: flex !important; 
+        max-height: 0;
+        opacity: 0;
+        border-top: 0 solid transparent;
+        pointer-events: none;
     }
 
     .label {
@@ -100,131 +249,293 @@
         align-items: center;
     }
 
-    .value {
-        flex-grow: 1;
-        padding: 10px;
-    }
+    .value { flex-grow: 1; padding: 10px; }
 
-    .explanation-cell {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 5px 10px;
-        background: var(--input-bg);
-    }
-
-    .request-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+    .request-controls { display: flex; flex-direction: column; gap: 8px; }
 
     .request-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        display: flex; flex-direction: row; align-items: center; gap: 8px; width: 100%;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-10px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
 
     .btn-circle {
-        border: none;
-        border-radius: 4px;
-        width: 26px;
-        height: 26px;
-        cursor: pointer;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
+        flex-shrink: 0; border: none; border-radius: 8px; width: 28px; height: 28px;
+        cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+        color: white; transition: transform 0.1s active;
     }
-
+    .btn-circle:active { transform: scale(0.9); }
     .add-btn { background: #28a745; }
     .remove-btn { background: #dc3545; font-size: 10px; }
     .btn-circle:disabled { background: #ccc; cursor: not-allowed; }
 
-    select, input[type="text"] {
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        padding: 8px;
-        background: var(--input-bg);
-        color: var(--text-color);
-        font-family: inherit;
+    select, input[type="text"], input[type="date"] {
+        flex-grow: 1; border: 1px solid var(--border-color); border-radius: 8px;
+        padding: 6px 8px; background: var(--input-bg); color: var(--text-color);
+        font-family: inherit; height: 34px; vertical-align: middle;
+        appearance: none; -webkit-appearance: none; transition: border-color 0.2s;
     }
-
-    .req-select { width: 100%; }
+    select:focus { border-color: var(--accent-color); outline: none; }
 
     textarea, .capture-replacement { 
-        width: 100%;
-        resize: none; 
-        overflow: hidden; 
-        border: none !important; 
-        outline: none !important;
-        background: var(--input-bg);
-        display: block;
-        line-height: 1.4;
-        padding: 5px 0 !important;
-        margin: 0 !important;
-        font-family: inherit;
-        color: var(--text-color);
-        white-space: pre-wrap; 
-        word-wrap: break-word;
-        font-size: 13.33px; /* standard textarea size */
+        width: 100%; resize: none; overflow: hidden; border: none !important; 
+        outline: none !important; background: var(--input-bg); display: block;
+        line-height: 1.3; padding: 2px 0 !important; margin: 0 !important;
+        font-family: inherit; color: var(--text-color); white-space: pre-wrap; word-wrap: break-word;
     }
 
-    #deliveryText { 
-        font-style: italic; 
-        background: var(--input-bg);
-    }
+    .explanation-cell { display: flex; flex-direction: column; justify-content: center; padding: 4px 10px; background: var(--input-bg); }
 
-    .send-options { display: flex; gap: 5px; }
+    .send-options { display: flex; gap: 8px; }
     .option {
-        flex: 1; padding: 10px; text-align: center;
-        border: 1px solid var(--border-color);
-        border-radius: 4px; cursor: pointer; background: var(--footer-bg);
-        font-size: 11px; transition: 0.2s; user-select: none;
+        flex: 1; padding: 10px; text-align: center; border: 1px solid var(--border-color);
+        border-radius: 10px; cursor: pointer; background: var(--footer-bg);
+        font-size: 11px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex; align-items: center; justify-content: center;
     }
-    .option.selected { background: #ffd700; color: #000; font-weight: bold; border-color: #b8860b; }
+    .option.selected { 
+        background: #ffd700; color: #000; font-weight: bold; border-color: #b8860b; 
+        transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
     .option.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; background: #eee; }
 
-    .branding-footer { 
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        padding: 12px; 
-        text-align: center; 
-        background: var(--footer-bg); 
-        font-size: 11px; 
-        border-top: 1px solid var(--border-color);
-        z-index: 100;
+    /* QUARTZ GLASS BUTTON BLOCK */
+    .quartz-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 20px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px var(--glass-shadow);
+        margin: 20px auto 10px auto;
+        width: fit-content;
     }
 
-    .button-row { text-align: center; margin: 15px 0; }
-    button.main-btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
+    .quartz-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-color);
+        opacity: 0.7;
+        font-size: 20px;
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
 
-    .section-title {
-        font-weight: bold;
-        color: var(--label-text);
-        margin-bottom: 10px;
-        text-transform: uppercase;
+    .quartz-btn:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--glass-border);
+        text-shadow: 0 0 12px currentColor;
+        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Text alongside icon for main action */
+    .quartz-btn.capture-btn {
+        width: auto;
+        padding: 0 20px;
         font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .quartz-btn.capture-btn span.icon { font-size: 18px; margin-right: 8px; }
+
+    /* Obsidian Button */
+    .obsidian-btn {
+        background: #000 !important;
+        border: 1px solid #111 !important;
+        box-shadow: inset 0 0 15px #000;
+        color: transparent !important; /* No Symbol */
+        transition: all 0.3s;
+    }
+    .obsidian-btn:hover {
+        box-shadow: inset 0 0 25px rgba(255, 0, 0, 0.8), 0 0 15px rgba(255, 0, 0, 0.5);
+        border-color: #ff0000 !important;
+    }
+    
+    .update-pulsate {
+        animation: redAlertPulse 1.2s infinite alternate !important;
+    }
+    @keyframes redAlertPulse {
+        from { box-shadow: 0 0 5px #ff0000, inset 0 0 5px #ff0000; border-color: #aa0000; }
+        to { box-shadow: 0 0 25px #ff0000, inset 0 0 20px #ff0000; border-color: #ff4444; }
     }
 
-    #hardshipScript {
+    /* Abort Reboot Button */
+    #abort-btn {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: #ff8c00;
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        padding: 25px 50px;
+        border-radius: 15px;
+        border: 2px solid #fff;
+        z-index: 100000;
+        cursor: pointer;
         display: none;
-        background: var(--container-bg);
-        padding: 20px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        margin-top: 20px;
+        animation: flashOrange 0.3s infinite alternate;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+    @keyframes flashOrange {
+        from { background: #ff8c00; box-shadow: 0 0 15px #ff8c00; transform: translate(-50%, -50%) scale(1); }
+        to { background: #ff4500; box-shadow: 0 0 50px #ff4500; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    /* Custom Update Modal UI */
+    #update-modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 50000;
+    }
+    
+    .update-dialog {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        color: var(--text-color);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        min-width: 320px;
+        animation: fadeInDown 0.4s ease;
+    }
+
+    .update-dialog h2 {
+        margin-top: 0;
+        letter-spacing: 2px;
+        font-weight: 800;
+        color: #ff4d4d;
+        text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+    }
+
+    /* Scrollable Wheel UI for Snooze */
+    .wheel-container {
+        margin: 20px 0;
+        position: relative;
+    }
+    .wheel-container::before, .wheel-container::after {
+        content: ''; position: absolute; left: 0; right: 0; height: 30px; pointer-events: none; z-index: 1;
+    }
+    .wheel-container::before { top: 0; background: linear-gradient(to bottom, var(--container-bg), transparent); border-radius: 10px 10px 0 0; }
+    .wheel-container::after { bottom: 0; background: linear-gradient(to top, var(--container-bg), transparent); border-radius: 0 0 10px 10px; }
+
+    #snooze-wheel {
+        width: 100%; height: 120px; border-radius: 10px; background: transparent;
+        border: 1px solid var(--border-color); overflow-y: auto; text-align: center;
+        font-size: 18px; font-weight: bold; color: var(--text-color);
+    }
+    #snooze-wheel option { padding: 10px; cursor: pointer; }
+    #snooze-wheel option:checked { background: var(--accent-color) !important; color: white !important; }
+
+    .date-tooltip {
+        margin-bottom: 20px;
+        width: 100%; box-sizing: border-box;
+        text-align: center;
+    }
+
+    .modal-btns {
+        display: flex; gap: 10px; justify-content: center;
+    }
+    .modal-btns button {
+        flex: 1; padding: 12px; font-weight: bold; border-radius: 10px;
+        border: 1px solid var(--border-color); cursor: pointer;
+        background: var(--input-bg); color: var(--text-color);
+        transition: all 0.2s;
+    }
+    .modal-btns button.sync-btn { background: #d16116; color: white; border-color: #a14c10; }
+    .modal-btns button.sync-btn:hover { background: #e07025; box-shadow: 0 0 10px rgba(209, 97, 22, 0.5); }
+    .modal-btns button.snooze-btn:hover { background: var(--border-color); }
+
+    /* Hardship Script Section */
+    #hardshipScript {
+        display: none; background: var(--container-bg); padding: 20px;
+        border: 1px solid var(--border-color); border-radius: 16px; margin-top: 20px;
+        animation: fadeInDown 0.4s ease;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     #hardshipScript h2 { color: var(--header-bg); font-size: 18px; margin-top: 0; border-bottom: 2px solid var(--header-bg); padding-bottom: 5px; }
-    .quote { font-style: italic; background: rgba(0,0,0,0.05); padding: 10px; border-left: 4px solid var(--header-bg); margin: 10px 0; display: block; }
+    .quote { font-style: italic; background: rgba(0,0,0,0.05); padding: 10px; border-left: 4px solid var(--header-bg); margin: 10px 0; display: block; border-radius: 0 8px 8px 0; }
     .step { font-weight: bold; color: var(--accent-color); display: block; margin-top: 15px; text-decoration: underline; }
+
+    .branding-footer { 
+        position: fixed; bottom: 0; left: 0; width: 100%; padding: 12px; 
+        text-align: left; background: var(--footer-bg); font-size: 11px; 
+        border-top: 1px solid var(--border-color); z-index: 100;
+    }
 </style>
 </head>
-<body>
+<body class="dark-mode">
+
+<div id="cinematic-overlay">
+    <div id="alien-screen">
+        <div class="alien-symbol">⌬</div>
+        <div class="alien-symbol">⏦</div>
+        <div class="alien-symbol">⧉</div>
+        <div style="font-size: 12px; letter-spacing: 5px;">RECALIBRATING CORE NEURALS</div>
+        <div class="loading-bar"></div>
+        <div style="font-size: 10px; color: rgba(0,255,204,0.5)">SYMBOLIC_LOAD_V4.02</div>
+    </div>
+</div>
+
+<button id="abort-btn" onclick="cancelReboot()">ABORT (5)</button>
+
+<div id="update-modal-overlay">
+    <div class="update-dialog">
+        <h2 id="update-dialog-title">UPDATE REQUIRED</h2>
+        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">System synchronization needed. Sync or select snooze duration.</p>
+        
+        <div class="wheel-container">
+            <select id="snooze-wheel" size="3">
+                <option value="15" selected>15 Minutes</option>
+                <option value="30">30 Minutes</option>
+                <option value="45">45 Minutes</option>
+                <option value="60">1 Hour</option>
+                <option value="120">2 Hours</option>
+                <option value="indefinite">Indefinitely</option>
+            </select>
+        </div>
+        
+        <input type="date" id="snooze-date" class="date-tooltip" title="Choose another day to snooze until">
+        
+        <div class="modal-btns">
+            <button class="snooze-btn" onclick="applySnooze()">SNOOZE</button>
+            <button class="sync-btn" onclick="executeSync()">SYNC</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
 
 <div class="top-section">
     <div class="form-container" id="captureArea">
@@ -243,7 +554,9 @@
                             <option value="">SELECT REQUEST / PROCEDURE</option>
                             <option value="loan">Loan Agreement</option>
                             <option value="installer">Installer Agreement</option>
+                            <option value="transfer">Transfer Agreement</option>
                             <option value="payoff">Payoff Quote</option>
+                            <option value="transition">Transition Letter</option>
                             <option value="cancellation">Cancellation Letter</option>
                             <option value="paidinfull">Paid in Full Letter</option>
                             <option value="due">Due Date Change</option>
@@ -260,7 +573,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row hidden" id="explanationRow">
             <div class="label">Explanation:</div>
             <div class="value explanation-cell">
                 <textarea id="procedureText" placeholder="" oninput="autoResize(this)"></textarea>
@@ -268,7 +581,7 @@
             </div>
         </div>
 
-        <div class="row" id="sendToRow">
+        <div class="row hidden" id="sendToRow">
             <div class="label">Send to:</div>
             <div class="value">
                 <div class="send-options">
@@ -280,25 +593,50 @@
         </div>
     </div>
 
-    <div class="button-row">
-        <button class="main-btn" style="background:#28a745; color:white" onclick="copyAsImage(this)">Capture Image for email</button>
-        <button class="main-btn" style="background:#6c757d; color:white" onclick="document.body.classList.toggle('dark-mode')">Contrast</button>
-        <button class="main-btn" style="background:#dc3545; color:white" onclick="logout()">Logout</button>
+    <div class="quartz-bar">
+        <button class="quartz-btn capture-btn" onclick="copyAsImage(this)" title="Capture Image for Email">
+            <span class="icon">⧉</span> CAPTURE
+        </button>
+        <button class="quartz-btn theme-btn" onclick="document.body.classList.toggle('dark-mode')" title="Toggle Theme">
+            ◑
+        </button>
+        <button class="quartz-btn obsidian-btn" id="critical-update-btn" onclick="initiateRebootSequence()" title="Critical Update Sequence">
+            </button>
     </div>
 </div>
 
 <div class="bottom-section">
-    <div class="section-title">Request Logs & Procedures</div>
-    <div id="requestDisplayArea">
-        <p style="color: #888;"></p>
-    </div>
+    <div class="section-title" style="font-size:12px; opacity:0.7; text-align:center; text-transform:uppercase; margin-bottom:10px;">case-specific instructions for selected procedure</div>
+    <div id="requestDisplayArea"></div>
 
-    <div id="hardshipScript">
-        <h2>Solar Servicing Financial Hardship Script for Agents</h2>
-        <div class="quote">
-            “We understand that challenges happen, and we’re here to support you. You may be eligible for our hardship program...”
-        </div>
-        </div>
+<div id="hardshipScript">
+    <h2>Solar Servicing Financial Hardship Script for Agents</h2>
+    <div class="quote">
+        “We understand that challenges happen, and we’re here to support you. You may be eligible for our hardship program. I just ask you a few questions to understand your financial situation. Once I have the information, I’ll submit it for review. We should have an answer shortly after. This will take about 10 minutes. Is now a good time to start? If not, we can schedule a call back.”
+    </div>
+    <span class="step">Step 1: Verify Eligibility</span>
+    <ul>
+        <li>Borrower made their first payment.</li>
+        <li>Loans under 90 days past due.</li>
+        <li>No other extension in previous 12 months (max 2 in 5 years).</li>
+        <li>Extension must be 1 to 3 months.</li>
+    </ul>
+    <span class="step">Step 2: Gather Information</span>
+    <p>Fill out the explanation fields above.</p>
+    <span class="step">Step 3: Informing Borrower About Limits</span>
+    <div class="quote">“Please note that if approved, you may not qualify for another extension for at least 12 months. We recommend requesting a 3-month extension.”</div>
+    <span class="step">Step 4: Submit via Slack</span>
+    <p>Paste questions/answers into <strong>#solar-serv-hardship-requests</strong> with note: <em>“Please review hardship request for [borrower name] + [loan number].”</em></p>
+    <span class="step">Step 5: Response to Borrower</span>
+    <p><strong>If Approved:</strong> <span class="quote">“Great news! Your request has been approved... let's set up autopay... What checking account will you be using?"</span></p>
+    <p><em>(Read mandatory interest accrual disclosure if they refuse autopay)</em></p>
+    <p><strong>If Denied:</strong> <span class="quote">“Your request has been denied due to [reason]. However, we’re still willing to work with you. Would you like to discuss payment plans?"</span></p>
+    <span class="step">Step 6: Wrap-Up</span>
+    <p>Recap next due date and ensure everything is clear.</p>
+    <span class="step">Step 7: Submitting the CRF</span>
+    <p>Subject: Solar Servicing / Acct # / Borrower Name / Hardship</p>
+    <p><strong>Approval:</strong> clientcare3@concordservicing.com & CC Supervisor</p>
+    <p><strong>Declined:</strong> mosaic@concordservicing.com & CC Supervisor</p>
 </div>
 
 <div class="branding-footer">
@@ -307,10 +645,197 @@
 </div>
 
 <script>
+    /* ======================================================================
+       TOAST MANAGER (Anti-Flooding System)
+       ====================================================================== */
+    const activeToasts = new Map();
+
+    function showToast(message, isError = false) {
+        const container = document.getElementById('toast-container');
+        
+        // Stack identical messages
+        if (activeToasts.has(message)) {
+            const toastData = activeToasts.get(message);
+            toastData.count++;
+            toastData.element.innerText = `${message} (x${toastData.count})`;
+            
+            // Reset animation
+            toastData.element.style.animation = 'none';
+            void toastData.element.offsetWidth; // trigger reflow
+            toastData.element.style.animation = 'stylishExitNoBlur 5s cubic-bezier(0.23, 1, 0.32, 1) forwards';
+            
+            clearTimeout(toastData.timeoutId);
+            toastData.timeoutId = setTimeout(() => removeToast(message), 5000);
+            return;
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        if (isError) {
+            toast.style.background = '#1a0505'; 
+            toast.style.borderColor = '#ff4d4d';
+            toast.style.color = '#ffcccc'; 
+        }
+        toast.innerText = message;
+        container.appendChild(toast);
+
+        const timeoutId = setTimeout(() => removeToast(message), 5000);
+        activeToasts.set(message, { element: toast, count: 1, timeoutId: timeoutId });
+    }
+
+    function removeToast(message) {
+        if (activeToasts.has(message)) {
+            const toastData = activeToasts.get(message);
+            if (toastData.element.parentNode) {
+                toastData.element.parentNode.removeChild(toastData.element);
+            }
+            activeToasts.delete(message);
+        }
+    }
+
+
+    /* ======================================================================
+       UPDATE & SNOOZE LOGIC
+       ====================================================================== */
+    let currentUpdateTarget = null; // 'self' or 'parent'
+    let selfTimer, parentTimer;
+    const btnUpdate = document.getElementById('critical-update-btn');
+    const modalOverlay = document.getElementById('update-modal-overlay');
+    const modalTitle = document.getElementById('update-dialog-title');
+
+    function triggerUpdateDialog(target) {
+        currentUpdateTarget = target;
+        btnUpdate.classList.add('update-pulsate');
+        modalTitle.innerText = target === 'self' ? "FVNCTIONS UPDATE" : "MAINFRAME UPDATE";
+        modalOverlay.style.display = 'flex';
+    }
+
+    function applySnooze() {
+        const wheel = document.getElementById('snooze-wheel');
+        const dateInput = document.getElementById('snooze-date');
+        let delayMs = 15 * 60 * 1000; // Default 15 min
+
+        if (dateInput.value) {
+            // Selected a specific date. Arbitrarily clear state, 
+            // In a real env, we'd calculate ms until that date.
+            delayMs = 24 * 60 * 60 * 1000; // Mocking 1 day delay for demo
+            dateInput.value = ""; // reset
+        } else if (wheel.value === 'indefinite') {
+            delayMs = 999 * 24 * 60 * 60 * 1000; // Effectively indefinite
+        } else {
+            delayMs = parseInt(wheel.value) * 60 * 1000;
+        }
+
+        modalOverlay.style.display = 'none';
+        btnUpdate.classList.remove('update-pulsate');
+        
+        // Re-arm timer based on target
+        if (currentUpdateTarget === 'self') {
+            clearTimeout(selfTimer);
+            selfTimer = setTimeout(() => triggerUpdateDialog('self'), delayMs);
+        } else {
+            clearTimeout(parentTimer);
+            parentTimer = setTimeout(() => triggerUpdateDialog('parent'), delayMs);
+        }
+    }
+
+    function executeSync() {
+        modalOverlay.style.display = 'none';
+        if (currentUpdateTarget === 'self') {
+            window.location.reload();
+        } else {
+            try {
+                window.parent.location.reload();
+            } catch (e) {
+                window.location.reload(); // Fallback if cross-origin policy blocks
+            }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        // FVNCTIONS UPDATE (Self) - After 4 seconds
+        selfTimer = setTimeout(() => {
+            triggerUpdateDialog('self');
+        }, 4000);
+
+        // MAINFRAME UPDATE (Parent) - After 60 seconds (1 minute)
+        parentTimer = setTimeout(() => {
+            // Check if FVNCTIONS modal is currently active, to not override it visually
+            if(modalOverlay.style.display !== 'flex') {
+                 triggerUpdateDialog('parent');
+            }
+        }, 60000);
+    });
+
+
+    /* ======================================================================
+       REBOOT SEQUENCE (OBSIDIAN BUTTON)
+       ====================================================================== */
+    let abortTimerInterval;
+    function initiateRebootSequence() {
+        // Stop any pending update alerts since user manually triggered reboot
+        btnUpdate.classList.remove('update-pulsate');
+        modalOverlay.style.display = 'none';
+        
+        const abortBtn = document.getElementById('abort-btn');
+        abortBtn.style.display = 'block';
+        
+        let timeLeft = 5;
+        abortBtn.innerText = `ABORT (${timeLeft})`;
+        
+        abortTimerInterval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft > 0) {
+                abortBtn.innerText = `ABORT (${timeLeft})`;
+            } else {
+                clearInterval(abortTimerInterval);
+                abortBtn.style.display = 'none';
+                triggerGlitchAndReload();
+            }
+        }, 1000);
+    }
+
+    function cancelReboot() {
+        clearInterval(abortTimerInterval);
+        document.getElementById('abort-btn').style.display = 'none';
+        showToast("Reboot sequence aborted.");
+    }
+
+    function triggerGlitchAndReload() {
+        document.body.classList.add('glitch-active');
+        setTimeout(() => {
+            const overlay = document.getElementById('cinematic-overlay');
+            overlay.style.display = 'flex';
+            overlay.classList.add('shut-off');
+            
+            setTimeout(() => {
+                overlay.classList.remove('shut-off');
+                overlay.style.opacity = '1';
+                overlay.style.background = 'black';
+                document.getElementById('alien-screen').style.display = 'block';
+                
+                // Final Escape: Target the Parent Frame
+                setTimeout(() => {
+                    try {
+                        window.parent.location.reload(); 
+                    } catch (e) {
+                        window.location.reload(); // Fallback
+                    }
+                }, 7000);
+            }, 500);
+        }, 1500);
+    }
+
+
+    /* ======================================================================
+       CORE CRF FORM LOGIC (Merged)
+       ====================================================================== */
     const requestMap = {
         loan: "Borrower requested Loan Agreement",
         installer: "Borrower requested Installer's Agreement",
+        transfer: "Borrower requested Transfer Agreement",
         payoff: "Borrower requested Payoff Quote",
+        transition: "Borrower requested Transition Letter",
         cancellation: "Borrower requested Cancellation Letter",
         paidinfull: "Borrower requested Paid-in-Full Letter",
         due: "Borrower requested Due Date Change",
@@ -323,21 +848,35 @@
         other: "Borrower requested [Custom]"
     };
 
+    const instructionMap = {
+        loan: "icc qa vps bo req loan agreement to confirmed e1, crf sent.",
+        installer: "icc qa vps bo req installer agreement to confirmed e1, crf sent",
+        payoff: "Calculate per diem interest. Quote valid until payoff date. icc qa vps bo req poq (date)",
+        paidinfull: "Confirm zero balance across all sub-ledgers. File release of lien eta 30 days.",
+        due: "Validate new date is between 1st and 28th. Check for active autopay conflicts.",
+        statement: "1 statement only courtesy, full e-statement history readily available on website",
+        refund: "Validate overage exact amount",
+        other: "PROCEDURE: ad libitum."
+    };
+
     const labelMap = {
-        loan: "Loan Agreement", installer: "Installer Agreement", payoff: "Payoff Quote",
+        loan: "Loan Agreement", installer: "Installer Agreement", transfer: "Transfer Agreement", payoff: "Payoff Quote", transition: "Transition Letter",
         cancellation: "Cancellation Letter", paidinfull: "Paid in Full Letter", due: "Due Date Change",
         history: "Transaction History", statement: "1 Statement Courtesy", receipt: "Payment Received Letter",
         closing: "Loan Closing Certificate", refund: "Refund", hardship: "Hardship", other: "Other"
     };
 
     const hideList = ["due", "refund", "hardship"];
-    const auth3rdPartyList = ["payoff", "cancellation", "paidinfull", "history", "statement", "closing", "receipt", "other"];
-    const blockNAList = ["loan", "installer"];
-    const forceE1OnlyList = ["loan", "installer"];
+    const auth3rdPartyList = ["payoff", "transition", "cancellation", "paidinfull", "history", "statement", "closing", "receipt", "other"];
+    const blockNAList = ["loan", "installer", "transfer"];
+    const forceE1OnlyList = ["loan", "installer", "transfer"];
 
     function addRequestRow() {
         const container = document.getElementById('requestContainer');
-        if (container.querySelectorAll('.request-item').length >= 3) return;
+        if (container.querySelectorAll('.request-item').length >= 3) {
+            showToast("Maximum of 3 requests allowed.", true);
+            return;
+        }
         const rowId = 'row-' + Date.now();
         const newItem = document.createElement('div');
         newItem.className = 'request-item';
@@ -369,11 +908,6 @@
         el.style.height = el.scrollHeight + 'px';
     }
 
-    function logout() {
-        sessionStorage.removeItem('crf_verified');
-        window.top.location.href = 'index.html';
-    }
-
     function syncExplanations(changedSelect) {
         if (changedSelect && changedSelect.value === "other") {
             const custom = prompt("Enter the custom request name:");
@@ -393,6 +927,7 @@
         const procText = document.getElementById('procedureText');
         const delText = document.getElementById('deliveryText');
         const sendRow = document.getElementById('sendToRow');
+        const explRow = document.getElementById('explanationRow');
         const naBtn = document.getElementById('naBtn');
         const e1Btn = document.getElementById('e1Btn');
         const displayArea = document.getElementById('requestDisplayArea');
@@ -413,6 +948,7 @@
                 const key = s.getAttribute('data-custom-key') || s.value;
                 const label = s.options[s.selectedIndex].text;
                 const description = requestMap[key] || "Borrower requested " + label;
+                const dummyInstruction = instructionMap[s.value] || "Follow standard procedure.";
                 
                 texts.push(description);
                 if (!hideList.includes(s.value)) allHiddenTypes = false;
@@ -423,30 +959,44 @@
 
                 let detail = document.createElement('div');
                 detail.style.marginBottom = "15px";
-                detail.innerHTML = `<strong>${label.toUpperCase()}:</strong><br>${description.replace(/\n/g, '<br>')}`;
+                detail.innerHTML = `<strong>${label.toUpperCase()}:</strong><br><span style="color:#d16116; font-style:italic;">${dummyInstruction}</span>`;
                 displayArea.appendChild(detail);
             }
         });
 
-        hardshipScript.style.display = showHardship ? "block" : "none";
-        if (!anySelected) displayArea.innerHTML = '<p style="color: #888;"></p>';
+        if (anySelected) {
+            explRow.classList.remove('hidden');
+            sendRow.classList.remove('hidden');
+        } else {
+            explRow.classList.add('hidden');
+            sendRow.classList.add('hidden');
+            displayArea.innerHTML = "";
+        }
 
+        hardshipScript.style.display = showHardship ? "block" : "none";
         procText.value = texts.join("\n");
 
         if (blockNA) {
             naBtn.classList.add('disabled');
-            if (naBtn.classList.contains('selected')) { naBtn.classList.remove('selected'); delText.value = ""; }
+            if (naBtn.classList.contains('selected')) { 
+                naBtn.classList.remove('selected'); 
+                delText.readOnly = true;
+                delText.value = ""; 
+            }
         } else {
             naBtn.classList.remove('disabled');
         }
 
-        if (forceE1) e1Btn.innerText = "E1";
+        if (forceE1) {
+            if (e1Btn.innerText !== "E1") e1Btn.innerText = "E1";
+        }
+
         naBtn.innerText = showAuthParty ? "Auth 3rd Party" : "N/A";
 
         if (allHiddenTypes && anySelected) {
             delText.style.display = "none";
             sendRow.style.display = "none";
-        } else {
+        } else if (anySelected) {
             delText.style.display = "block";
             sendRow.style.display = "flex";
         }
@@ -469,7 +1019,10 @@
         if (isForced) {
             e1Btn.innerText = "E1";
             e1Btn.classList.toggle('selected');
-            if (e1Btn.classList.contains('selected')) naBtn.classList.remove('selected');
+            if (e1Btn.classList.contains('selected')) {
+                naBtn.classList.remove('selected');
+                delText.readOnly = true;
+            }
         } else {
             const states = ["E1", "E2", "E1 & E2"];
             let idx = states.indexOf(e1Btn.innerText);
@@ -477,6 +1030,7 @@
                 e1Btn.classList.add('selected');
                 e1Btn.innerText = "E1";
                 naBtn.classList.remove('selected');
+                delText.readOnly = true;
             } else if (idx < 2) {
                 e1Btn.innerText = states[idx + 1];
             } else {
@@ -490,6 +1044,7 @@
     addrBtn.onclick = () => {
         addrBtn.classList.toggle('selected');
         naBtn.classList.remove('selected');
+        delText.readOnly = true;
         updateDeliveryLine();
     };
 
@@ -523,56 +1078,77 @@
 
     async function copyAsImage(btn) {
         const area = document.getElementById('captureArea');
-        const originalText = btn.innerText;
-        btn.innerText = "Capturing...";
+
+        const selects = area.querySelectorAll('.req-select');
+        let hasSelection = false;
+        selects.forEach(s => { if (s.value !== "") hasSelection = true; });
+        if (!hasSelection) { showToast("Procedure - not selected -", true); return; }
+
+        const sendRow = document.getElementById('sendToRow');
+        const isSendRowVisible = window.getComputedStyle(sendRow).display !== 'none';
+        const deliverySelected = document.querySelector('.option.selected');
+        if (isSendRowVisible && !deliverySelected) { showToast("Delivery method - not selected -", true); return; }
 
         const textareas = area.querySelectorAll('textarea');
         const replacements = [];
 
-        // Convert Textareas to Divs so html2canvas sees the content
         textareas.forEach(ta => {
-            const isVisible = window.getComputedStyle(ta).display !== 'none';
-            if (isVisible) {
+            const isHidden = window.getComputedStyle(ta).display === 'none';
+            const hasContent = ta.value.trim().length > 0;
+            if (!isHidden && hasContent) {
                 const div = document.createElement('div');
                 div.className = 'capture-replacement';
-                // Copy height exactly as it is now
-                div.style.height = ta.style.height;
                 div.innerText = ta.value;
                 ta.parentNode.insertBefore(div, ta);
                 replacements.push({div, ta});
-                ta.style.display = 'none';
             }
+            ta.style.display = 'none';
+        });
+
+        selects.forEach(s => {
+            s.setAttribute('data-original-style', s.style.cssText);
+            s.style.appearance = 'none';
+            s.style.webkitAppearance = 'none';
+            s.style.lineHeight = '1.2';
+            s.style.paddingTop = '4px'; 
+            s.style.paddingBottom = '4px';
         });
 
         try {
             const canvas = await html2canvas(area, { 
-                scale: 2, 
+                scale: 1, 
                 backgroundColor: null,
                 logging: false,
                 useCORS: true,
-                scrollY: -window.scrollY
+                onclone: (clonedDoc) => {
+                    const clonedArea = clonedDoc.getElementById('captureArea');
+                    clonedArea.style.overflow = 'visible';
+                }
             });
-            
             canvas.toBlob(blob => {
+                if (!blob) {
+                    showToast("❌ Blob creation failed.", true);
+                    return;
+                }
                 const item = new ClipboardItem({ "image/png": blob });
                 navigator.clipboard.write([item]);
-                btn.innerText = "Captured! Now go to email and paste it.";
+                showToast("✅ Captured! Now go to email and paste it.");
             });
         } catch (e) { 
             console.error(e);
-            btn.innerText = "Error"; 
+            showToast("❌ Error capturing image.", true); 
         } finally {
-            // Restore everything
-            replacements.forEach(pair => {
-                pair.ta.style.display = 'block';
-                pair.div.remove();
+            textareas.forEach(ta => { ta.style.display = ''; });
+            replacements.forEach(pair => { pair.div.remove(); });
+            selects.forEach(s => {
+                s.style.cssText = s.getAttribute('data-original-style');
+                s.removeAttribute('data-original-style');
             });
-            syncExplanations(); 
-            setTimeout(() => btn.innerText = originalText, 6000);
         }
     }
 
-    // Default state
+    // Default initialization
+    document.body.classList.add('dark-mode');
     naBtn.classList.add('selected');
 </script>
 </body>
