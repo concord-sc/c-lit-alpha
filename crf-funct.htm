@@ -7,64 +7,37 @@
 
 <script>
     if (sessionStorage.getItem('crf_verified') !== 'true') {
-        // window.location.replace('index.html');
+        window.location.replace('index.html');
     }
 </script>
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
-    /* Variables */
-    :root {
-        --bg-color: #eef2f5;
-        --container-bg: #ffffff;
-        --text-color: #333;
-        --label-bg: #f0f8ff;
-        --label-text: #1a3a5a;
-        --border-color: #b0bfc9;
-        --header-bg: #a14c10;
-        --footer-bg: #f1f4f7;
-        --accent-color: #d16116;
-        --input-bg: #ffffff;
-        
-        /* Glassmorphism Vars */
-        --glass-bg: rgba(255, 255, 255, 0.2);
-        --glass-border: rgba(255, 255, 255, 0.4);
-        --glass-shadow: rgba(0, 0, 0, 0.1);
-    }
-
-    body.dark-mode {
-        --bg-color: #1a1a1a;
-        --container-bg: #2d2d2d;
-        --text-color: #e0e0e0;
-        --label-bg: #3d3d3d;
-        --label-text: #89cff0;
-        --border-color: #444;
-        --header-bg: #7a3a0c;
-        --footer-bg: #252525;
-        --input-bg: #3d3d3d;
-        
-        --glass-bg: rgba(255, 255, 255, 0.05);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --glass-shadow: rgba(0, 0, 0, 0.3);
-    }
-
-    /* Base Layout */
-    body {
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 0;
+    /* Top Persistent Banner */
+    #uptime-banner {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 20px;
+        background: rgba(10, 10, 10, 0.95);
+        color: #00ffcc;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 11px;
         display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        z-index: 999999;
+        border-bottom: 1px solid #333;
+        padding: 0;
+        margin: 0;
     }
+    
+    .chrono-item { display: flex; gap: 8px; align-items: center; }
+    .chrono-limit { color: #888; font-size: 9px; }
 
-    /* Notifications / Toasts - Stackable */
+    /* Notifications/Toasts (Stacked) */
     #toast-container {
         position: fixed;
-        top: 10px;
+        top: 30px; /* offset for banner */
         left: 50%;
         transform: translateX(-50%);
         z-index: 10000;
@@ -87,30 +60,65 @@
         text-align: center;
         font-size: 14px;
         border: 1px solid rgba(255, 255, 255, 0.25); 
-        animation: stylishExitNoBlur 5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-        transition: transform 0.2s, opacity 0.2s;
+        animation: toastEnter 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        transition: all 0.3s ease;
+        opacity: 1;
+    }
+    
+    .toast.removing {
+        animation: stylishExitNoBlur 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
     }
 
-    .alarm-toast {
-        background: rgba(139, 0, 0, 0.9) !important;
-        border: 1px solid #ff4d4d !important;
-        font-family: 'Courier New', Courier, monospace;
-        animation: pulseRedToast 0.5s infinite alternate !important;
-    }
-
-    @keyframes pulseRedToast {
-        from { box-shadow: 0 0 10px #ff0000; }
-        to { box-shadow: 0 0 25px #ff0000; }
+    @keyframes toastEnter {
+        0% { transform: translateY(-20px) scale(0.9); opacity: 0; }
+        100% { transform: translateY(0) scale(1); opacity: 1; }
     }
 
     @keyframes stylishExitNoBlur {
-        0% { transform: translateY(-150%) scale(0.9); opacity: 0; }
-        10% { transform: translateY(0) scale(1); opacity: 1; }
-        90% { transform: translateY(0) scale(1); opacity: 1; }
+        0% { transform: scale(1); opacity: 1; }
         100% { transform: translateY(-25px) scale(0.85); opacity: 0; }
     }
 
-    /* Cinematic Elements & Glitch */
+    /* Variables */
+    :root {
+        --bg-color: #eef2f5;
+        --container-bg: #ffffff;
+        --text-color: #333;
+        --label-bg: #f0f8ff;
+        --label-text: #1a3a5a;
+        --border-color: #b0bfc9;
+        --header-bg: #a14c10;
+        --footer-bg: #f1f4f7;
+        --accent-color: #d16116;
+        --input-bg: #ffffff;
+    }
+
+    body.dark-mode {
+        --bg-color: #1a1a1a;
+        --container-bg: #2d2d2d;
+        --text-color: #e0e0e0;
+        --label-bg: #3d3d3d;
+        --label-text: #89cff0;
+        --border-color: #444;
+        --header-bg: #7a3a0c;
+        --footer-bg: #252525;
+        --input-bg: #3d3d3d;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        padding-top: 20px; /* Buffer for banner */
+    }
+
+    /* Cinematic Elements */
     #cinematic-overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
@@ -180,12 +188,261 @@
         width: 100%;
         height: 100%;
         background: #00ffcc;
-        animation: slide-load 7s linear forwards;
+        animation: slide-load 2s linear forwards; /* Updated to 2s */
     }
 
-    @keyframes slide-load { to { left: 0; } }
+    @keyframes slide-load {
+        to { left: 0; }
+    }
 
-    /* Layout Elements */
+    /* Quartz Glass Block */
+    .button-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0; 
+        margin: 15px 0;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        padding: 5px;
+        width: max-content;
+        margin-left: auto; margin-right: auto;
+    }
+
+    .quartz-btn {
+        background: transparent;
+        border: none;
+        height: 40px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.4);
+        text-shadow: 0 0 2px rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .quartz-btn:last-child {
+        border-right: none;
+    }
+
+    body:not(.dark-mode) .quartz-btn {
+        color: rgba(0,0,0,0.4);
+        text-shadow: 0 0 2px rgba(0,0,0,0.1);
+        border-right: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .quartz-btn:hover {
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+    }
+    
+    body:not(.dark-mode) .quartz-btn:hover {
+        color: #000;
+        text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.05);
+    }
+
+    /* Refined Sync Button (Black Button) */
+    .sync-btn {
+        background: #000;
+        border: 1px solid #111;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px; /* Smoother radius to fit quartz */
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        margin-left: 10px;
+        box-shadow: inset 0 0 5px rgba(0,0,0,1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .sync-btn::before {
+        content: '';
+        position: absolute;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .sync-btn:hover::before {
+        opacity: 1;
+    }
+
+    .sync-btn:hover {
+        box-shadow: 0 0 15px rgba(255,0,0,0.5), inset 0 0 10px rgba(255,0,0,0.2);
+        border-color: #300;
+    }
+
+    .pulsate-red {
+        animation: pulseRedActive 1s infinite alternate, flashEntrance 0.5s ease-out;
+        border-color: #ff0000 !important;
+    }
+
+    @keyframes pulseRedActive {
+        from { box-shadow: 0 0 10px #ff0000, inset 0 0 10px #500; }
+        to { box-shadow: 0 0 25px #ff0000, inset 0 0 20px #a00; }
+    }
+
+    @keyframes flashEntrance {
+        0% { transform: scale(1); filter: brightness(1); }
+        50% { transform: scale(1.2); filter: brightness(3); }
+        100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    /* Dialog Boxes */
+    #dialog-overlay, #abort-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        backdrop-filter: blur(5px);
+        z-index: 100000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .dialog-box {
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 16px;
+        padding: 30px;
+        color: #fff;
+        width: 400px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1);
+        animation: dialogPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes dialogPop {
+        from { transform: scale(0.8) translateY(20px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .dialog-box h2 {
+        font-family: 'Courier New', Courier, monospace;
+        letter-spacing: 2px;
+        margin-top: 0;
+        border-bottom: 1px solid #333;
+        padding-bottom: 15px;
+    }
+
+    .dialog-chrono-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 20px 0;
+        text-align: left;
+        background: #0a0a0a;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: monospace;
+    }
+
+    .snooze-ui {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .wheel-container {
+        position: relative;
+        height: 60px;
+        width: 120px;
+        overflow: auto;
+        background: #222;
+        border-radius: 8px;
+        border: 1px solid #444;
+        scrollbar-width: none; /* Firefox */
+    }
+    .wheel-container::-webkit-scrollbar { display: none; }
+    
+    .wheel-item {
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        font-size: 14px;
+        color: #888;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .wheel-item:hover { color: #fff; }
+    .wheel-item.active { color: #00ffcc; font-weight: bold; font-size: 16px; }
+
+    input[type="date"].tooltip-cal {
+        background: #222;
+        color: #fff;
+        border: 1px solid #444;
+        padding: 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .dialog-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .dialog-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: filter 0.2s;
+    }
+    .dialog-btn:hover { filter: brightness(1.2); }
+    .btn-sync-action { background: #ff4d4d; color: white; }
+    .btn-snooze-action { background: #444; color: white; border: 1px solid #666; }
+
+    /* Tactical Abort Button */
+    .tactical-orange {
+        background: #ff5500;
+        color: #fff;
+        border: 4px solid #cc4400;
+        border-radius: 12px;
+        font-size: 32px;
+        font-weight: 900;
+        padding: 20px 50px;
+        cursor: pointer;
+        box-shadow: 0 0 40px #ff5500, inset 0 0 20px #fff;
+        animation: strobeOrange 0.2s infinite alternate;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+    }
+
+    @keyframes strobeOrange {
+        from { filter: brightness(1); transform: scale(1); }
+        to { filter: brightness(1.5); transform: scale(1.02); }
+    }
+    
+    .abort-subtext {
+        color: #ffaa80;
+        font-family: monospace;
+        margin-top: 15px;
+        font-size: 16px;
+    }
+
+    /* Original UI Layout */
     .top-section {
         flex-shrink: 0;
         padding: 20px 20px 10px 20px;
@@ -249,12 +506,23 @@
         align-items: center;
     }
 
-    .value { flex-grow: 1; padding: 10px; }
+    .value {
+        flex-grow: 1;
+        padding: 10px;
+    }
 
-    .request-controls { display: flex; flex-direction: column; gap: 8px; }
+    .request-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
 
     .request-item {
-        display: flex; flex-direction: row; align-items: center; gap: 8px; width: 100%;
+        display: flex;
+        flex-direction: row; 
+        align-items: center;
+        gap: 8px;
+        width: 100%;
         animation: slideIn 0.3s ease-out;
     }
 
@@ -264,275 +532,176 @@
     }
 
     .btn-circle {
-        flex-shrink: 0; border: none; border-radius: 8px; width: 28px; height: 28px;
-        cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
-        color: white; transition: transform 0.1s active;
+        flex-shrink: 0;
+        border: none;
+        border-radius: 8px;
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: transform 0.1s active;
     }
     .btn-circle:active { transform: scale(0.9); }
+
     .add-btn { background: #28a745; }
     .remove-btn { background: #dc3545; font-size: 10px; }
     .btn-circle:disabled { background: #ccc; cursor: not-allowed; }
 
-    select, input[type="text"], input[type="date"] {
-        flex-grow: 1; border: 1px solid var(--border-color); border-radius: 8px;
-        padding: 6px 8px; background: var(--input-bg); color: var(--text-color);
-        font-family: inherit; height: 34px; vertical-align: middle;
-        appearance: none; -webkit-appearance: none; transition: border-color 0.2s;
+    select, input[type="text"] {
+        flex-grow: 1;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px 8px;
+        background: var(--input-bg);
+        color: var(--text-color);
+        font-family: inherit;
+        height: 34px;
+        vertical-align: middle;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color 0.2s;
     }
     select:focus { border-color: var(--accent-color); outline: none; }
 
     textarea, .capture-replacement { 
-        width: 100%; resize: none; overflow: hidden; border: none !important; 
-        outline: none !important; background: var(--input-bg); display: block;
-        line-height: 1.3; padding: 2px 0 !important; margin: 0 !important;
-        font-family: inherit; color: var(--text-color); white-space: pre-wrap; word-wrap: break-word;
+        width: 100%;
+        resize: none; 
+        overflow: hidden; 
+        border: none !important; 
+        outline: none !important;
+        background: var(--input-bg);
+        display: block;
+        line-height: 1.3;
+        padding: 2px 0 !important;
+        margin: 0 !important;
+        font-family: inherit;
+        color: var(--text-color);
+        white-space: pre-wrap; 
+        word-wrap: break-word;
     }
 
-    .explanation-cell { display: flex; flex-direction: column; justify-content: center; padding: 4px 10px; background: var(--input-bg); }
+    .explanation-cell {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 4px 10px;
+        background: var(--input-bg);
+    }
 
     .send-options { display: flex; gap: 8px; }
     .option {
-        flex: 1; padding: 10px; text-align: center; border: 1px solid var(--border-color);
-        border-radius: 10px; cursor: pointer; background: var(--footer-bg);
+        flex: 1; padding: 10px; text-align: center;
+        border: 1px solid var(--border-color);
+        border-radius: 10px; 
+        cursor: pointer; background: var(--footer-bg);
         font-size: 11px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex; align-items: center; justify-content: center;
     }
     .option.selected { 
-        background: #ffd700; color: #000; font-weight: bold; border-color: #b8860b; 
-        transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        background: #ffd700; 
+        color: #000; 
+        font-weight: bold; 
+        border-color: #b8860b; 
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .option.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; background: #eee; }
 
-    /* QUARTZ GLASS BUTTON BLOCK */
-    .quartz-bar {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 20px;
-        background: var(--glass-bg);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        box-shadow: 0 8px 32px var(--glass-shadow);
-        margin: 20px auto 10px auto;
-        width: fit-content;
-    }
-
-    .quartz-btn {
-        background: transparent;
-        border: 1px solid transparent;
-        color: var(--text-color);
-        opacity: 0.7;
-        font-size: 20px;
-        width: 45px;
-        height: 45px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .quartz-btn:hover {
-        opacity: 1;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid var(--glass-border);
-        text-shadow: 0 0 12px currentColor;
-        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
-    }
-
-    /* Text alongside icon for main action */
-    .quartz-btn.capture-btn {
-        width: auto;
-        padding: 0 20px;
-        font-size: 14px;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .quartz-btn.capture-btn span.icon { font-size: 18px; margin-right: 8px; }
-
-    /* Obsidian Button */
-    .obsidian-btn {
-        background: #000 !important;
-        border: 1px solid #111 !important;
-        box-shadow: inset 0 0 15px #000;
-        color: transparent !important; /* No Symbol */
-        transition: all 0.3s;
-    }
-    .obsidian-btn:hover {
-        box-shadow: inset 0 0 25px rgba(255, 0, 0, 0.8), 0 0 15px rgba(255, 0, 0, 0.5);
-        border-color: #ff0000 !important;
-    }
-    
-    .update-pulsate {
-        animation: redAlertPulse 1.2s infinite alternate !important;
-    }
-    @keyframes redAlertPulse {
-        from { box-shadow: 0 0 5px #ff0000, inset 0 0 5px #ff0000; border-color: #aa0000; }
-        to { box-shadow: 0 0 25px #ff0000, inset 0 0 20px #ff0000; border-color: #ff4444; }
-    }
-
-    /* Abort Reboot Button */
-    #abort-btn {
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        background: #ff8c00;
-        color: white;
-        font-size: 32px;
-        font-weight: bold;
-        padding: 25px 50px;
-        border-radius: 15px;
-        border: 2px solid #fff;
-        z-index: 100000;
-        cursor: pointer;
-        display: none;
-        animation: flashOrange 0.3s infinite alternate;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-    @keyframes flashOrange {
-        from { background: #ff8c00; box-shadow: 0 0 15px #ff8c00; transform: translate(-50%, -50%) scale(1); }
-        to { background: #ff4500; box-shadow: 0 0 50px #ff4500; transform: translate(-50%, -50%) scale(1.05); }
-    }
-
-    /* Custom Update Modal UI */
-    #update-modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 50000;
-    }
-    
-    .update-dialog {
-        background: var(--glass-bg);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 30px;
-        text-align: center;
-        color: var(--text-color);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        min-width: 320px;
-        animation: fadeInDown 0.4s ease;
-    }
-
-    .update-dialog h2 {
-        margin-top: 0;
-        letter-spacing: 2px;
-        font-weight: 800;
-        color: #ff4d4d;
-        text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
-    }
-
-    /* Scrollable Wheel UI for Snooze */
-    .wheel-container {
-        margin: 20px 0;
-        position: relative;
-    }
-    .wheel-container::before, .wheel-container::after {
-        content: ''; position: absolute; left: 0; right: 0; height: 30px; pointer-events: none; z-index: 1;
-    }
-    .wheel-container::before { top: 0; background: linear-gradient(to bottom, var(--container-bg), transparent); border-radius: 10px 10px 0 0; }
-    .wheel-container::after { bottom: 0; background: linear-gradient(to top, var(--container-bg), transparent); border-radius: 0 0 10px 10px; }
-
-    #snooze-wheel {
-        width: 100%; height: 120px; border-radius: 10px; background: transparent;
-        border: 1px solid var(--border-color); overflow-y: auto; text-align: center;
-        font-size: 18px; font-weight: bold; color: var(--text-color);
-    }
-    #snooze-wheel option { padding: 10px; cursor: pointer; }
-    #snooze-wheel option:checked { background: var(--accent-color) !important; color: white !important; }
-
-    .date-tooltip {
-        margin-bottom: 20px;
-        width: 100%; box-sizing: border-box;
-        text-align: center;
-    }
-
-    .modal-btns {
-        display: flex; gap: 10px; justify-content: center;
-    }
-    .modal-btns button {
-        flex: 1; padding: 12px; font-weight: bold; border-radius: 10px;
-        border: 1px solid var(--border-color); cursor: pointer;
-        background: var(--input-bg); color: var(--text-color);
-        transition: all 0.2s;
-    }
-    .modal-btns button.sync-btn { background: #d16116; color: white; border-color: #a14c10; }
-    .modal-btns button.sync-btn:hover { background: #e07025; box-shadow: 0 0 10px rgba(209, 97, 22, 0.5); }
-    .modal-btns button.snooze-btn:hover { background: var(--border-color); }
-
-    /* Hardship Script Section */
     #hardshipScript {
-        display: none; background: var(--container-bg); padding: 20px;
-        border: 1px solid var(--border-color); border-radius: 16px; margin-top: 20px;
+        display: none;
+        background: var(--container-bg);
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        margin-top: 20px;
         animation: fadeInDown 0.4s ease;
     }
+
     @keyframes fadeInDown {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
     #hardshipScript h2 { color: var(--header-bg); font-size: 18px; margin-top: 0; border-bottom: 2px solid var(--header-bg); padding-bottom: 5px; }
     .quote { font-style: italic; background: rgba(0,0,0,0.05); padding: 10px; border-left: 4px solid var(--header-bg); margin: 10px 0; display: block; border-radius: 0 8px 8px 0; }
     .step { font-weight: bold; color: var(--accent-color); display: block; margin-top: 15px; text-decoration: underline; }
 
     .branding-footer { 
-        position: fixed; bottom: 0; left: 0; width: 100%; padding: 12px; 
-        text-align: left; background: var(--footer-bg); font-size: 11px; 
-        border-top: 1px solid var(--border-color); z-index: 100;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px; 
+        text-align: left;
+        background: var(--footer-bg); 
+        font-size: 11px; 
+        border-top: 1px solid var(--border-color);
+        z-index: 100;
     }
 </style>
 </head>
 <body class="dark-mode">
+
+<div id="uptime-banner">
+    <div class="chrono-item">
+        <span>MAINFRAME UPTIME: <span id="val-parent-pre">00:00</span></span>
+        <span class="chrono-limit">[MAX]</span>
+    </div>
+    <div class="chrono-item">
+        <span>OFFSET: <span id="val-parent-post">00:00</span></span>
+        <span class="chrono-limit">[--]</span>
+    </div>-->
+    <div class="chrono-item">
+        <span>SUBSYS UPTIME: <span id="val-self">00:00</span></span>
+        <span class="chrono-limit">[MAX]</span>
+    </div>
+</div>
 
 <div id="cinematic-overlay">
     <div id="alien-screen">
         <div class="alien-symbol">⌬</div>
         <div class="alien-symbol">⏦</div>
         <div class="alien-symbol">⧉</div>
-        <div style="font-size: 12px; letter-spacing: 5px;">RECALIBRATING CORE NEURALS</div>
+        <div style="font-size: 12px; letter-spacing: 5px;">MAINFRAME SYNC</div>
         <div class="loading-bar"></div>
-        <div style="font-size: 10px; color: rgba(0,255,204,0.5)">SYMBOLIC_LOAD_V4.02</div>
+        <div style="font-size: 10px; color: rgba(0,255,204,0.5)">INJECTING...</div>
     </div>
 </div>
 
-<button id="abort-btn" onclick="cancelReboot()">ABORT (5)</button>
-
-<div id="update-modal-overlay">
-    <div class="update-dialog">
-        <h2 id="update-dialog-title">UPDATE REQUIRED</h2>
-        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">System synchronization needed. Sync or select snooze duration.</p>
+<div id="dialog-overlay">
+    <div class="dialog-box">
+        <h2 id="dialog-title">MAINFRAME SYNC</h2>
+        <p style="color:#aaa; font-size:13px; margin-bottom: 0;">SNOOZE IF YOU'VE ALREADY RE-SYNC LESS THAN 2 DAYS AGO. Refresh Periodically for new features.</p>
         
-        <div class="wheel-container">
-            <select id="snooze-wheel" size="3">
-                <option value="15" selected>15 Minutes</option>
-                <option value="30">30 Minutes</option>
-                <option value="45">45 Minutes</option>
-                <option value="60">1 Hour</option>
-                <option value="120">2 Hours</option>
-                <option value="indefinite">Indefinitely</option>
-            </select>
+        <div class="dialog-chrono-grid">
+            <div id="diag-pre">Parent Pre-Login: 00:00</div>
+            <div id="diag-post">Parent Post-Login: 00:00</div>
+            <div id="diag-self">Self Uptime: 00:00</div>
         </div>
-        
-        <input type="date" id="snooze-date" class="date-tooltip" title="Choose another day to snooze until">
-        
-        <div class="modal-btns">
-            <button class="snooze-btn" onclick="applySnooze()">SNOOZE</button>
-            <button class="sync-btn" onclick="executeSync()">SYNC</button>
+
+        <div class="snooze-ui">
+            <div class="wheel-container" id="snooze-wheel">
+                <div class="wheel-item active" data-val="43200">next shift</div>
+                <div class="wheel-item" data-val="9000">2.5 hours</div>
+                <div class="wheel-item" data-val="259200">3 days</div>
+            </div>
+            <input type="date" class="tooltip-cal" title="Choose another day">
+        </div>
+
+        <div class="dialog-actions">
+            <button class="dialog-btn btn-snooze-action" onclick="applySnooze()">SNOOZE</button>
+            <button class="dialog-btn btn-sync-action" onclick="triggerManualSync()">SYNC NOW</button>
         </div>
     </div>
+</div>
+
+<div id="abort-overlay">
+    <button id="abort-btn" class="tactical-orange" onclick="abortSyncSequence()">ABORT</button>
+    <div class="abort-subtext">SYNC IN <span id="abort-timer-val">5.0</span>s</div>
 </div>
 
 <div id="toast-container"></div>
@@ -593,20 +762,16 @@
         </div>
     </div>
 
-    <div class="quartz-bar">
-        <button class="quartz-btn capture-btn" onclick="copyAsImage(this)" title="Capture Image for Email">
-            <span class="icon">⧉</span> CAPTURE
-        </button>
-        <button class="quartz-btn theme-btn" onclick="document.body.classList.toggle('dark-mode')" title="Toggle Theme">
-            ◑
-        </button>
-        <button class="quartz-btn obsidian-btn" id="critical-update-btn" onclick="initiateRebootSequence()" title="Critical Update Sequence">
-            </button>
-    </div>
+    <div class="button-row">
+        <button class="quartz-btn" onclick="copyAsImage(this)">[ CAPTURE IMAGE ]</button>
+        <button class="quartz-btn" onclick="document.body.classList.toggle('dark-mode')">[ THEME ]</button>
+        <button class="quartz-btn" onclick="refreshIframe()">[ REFRESH ]</button>
+        <button class="sync-btn" id="main-sync-btn" onclick="triggerManualSync()" title="System Sync"></button>
+     </div>
 </div>
 
 <div class="bottom-section">
-    <div class="section-title" style="font-size:12px; opacity:0.7; text-align:center; text-transform:uppercase; margin-bottom:10px;">case-specific instructions for selected procedure</div>
+    <div class="section-title" style="text-transform:uppercase; font-size:12px; margin-bottom:10px; font-weight:bold; color:var(--accent-color);">case-specific instructions for selected procedure</div>
     <div id="requestDisplayArea"></div>
 
 <div id="hardshipScript">
@@ -614,6 +779,7 @@
     <div class="quote">
         “We understand that challenges happen, and we’re here to support you. You may be eligible for our hardship program. I just ask you a few questions to understand your financial situation. Once I have the information, I’ll submit it for review. We should have an answer shortly after. This will take about 10 minutes. Is now a good time to start? If not, we can schedule a call back.”
     </div>
+
     <span class="step">Step 1: Verify Eligibility</span>
     <ul>
         <li>Borrower made their first payment.</li>
@@ -621,18 +787,24 @@
         <li>No other extension in previous 12 months (max 2 in 5 years).</li>
         <li>Extension must be 1 to 3 months.</li>
     </ul>
+
     <span class="step">Step 2: Gather Information</span>
     <p>Fill out the explanation fields above.</p>
+
     <span class="step">Step 3: Informing Borrower About Limits</span>
     <div class="quote">“Please note that if approved, you may not qualify for another extension for at least 12 months. We recommend requesting a 3-month extension.”</div>
+
     <span class="step">Step 4: Submit via Slack</span>
     <p>Paste questions/answers into <strong>#solar-serv-hardship-requests</strong> with note: <em>“Please review hardship request for [borrower name] + [loan number].”</em></p>
+
     <span class="step">Step 5: Response to Borrower</span>
     <p><strong>If Approved:</strong> <span class="quote">“Great news! Your request has been approved... let's set up autopay... What checking account will you be using?"</span></p>
     <p><em>(Read mandatory interest accrual disclosure if they refuse autopay)</em></p>
     <p><strong>If Denied:</strong> <span class="quote">“Your request has been denied due to [reason]. However, we’re still willing to work with you. Would you like to discuss payment plans?"</span></p>
+
     <span class="step">Step 6: Wrap-Up</span>
     <p>Recap next due date and ensure everything is clear.</p>
+
     <span class="step">Step 7: Submitting the CRF</span>
     <p>Subject: Solar Servicing / Acct # / Borrower Name / Hardship</p>
     <p><strong>Approval:</strong> clientcare3@concordservicing.com & CC Supervisor</p>
@@ -645,191 +817,7 @@
 </div>
 
 <script>
-    /* ======================================================================
-       TOAST MANAGER (Anti-Flooding System)
-       ====================================================================== */
-    const activeToasts = new Map();
-
-    function showToast(message, isError = false) {
-        const container = document.getElementById('toast-container');
-        
-        // Stack identical messages
-        if (activeToasts.has(message)) {
-            const toastData = activeToasts.get(message);
-            toastData.count++;
-            toastData.element.innerText = `${message} (x${toastData.count})`;
-            
-            // Reset animation
-            toastData.element.style.animation = 'none';
-            void toastData.element.offsetWidth; // trigger reflow
-            toastData.element.style.animation = 'stylishExitNoBlur 5s cubic-bezier(0.23, 1, 0.32, 1) forwards';
-            
-            clearTimeout(toastData.timeoutId);
-            toastData.timeoutId = setTimeout(() => removeToast(message), 5000);
-            return;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        if (isError) {
-            toast.style.background = '#1a0505'; 
-            toast.style.borderColor = '#ff4d4d';
-            toast.style.color = '#ffcccc'; 
-        }
-        toast.innerText = message;
-        container.appendChild(toast);
-
-        const timeoutId = setTimeout(() => removeToast(message), 5000);
-        activeToasts.set(message, { element: toast, count: 1, timeoutId: timeoutId });
-    }
-
-    function removeToast(message) {
-        if (activeToasts.has(message)) {
-            const toastData = activeToasts.get(message);
-            if (toastData.element.parentNode) {
-                toastData.element.parentNode.removeChild(toastData.element);
-            }
-            activeToasts.delete(message);
-        }
-    }
-
-
-    /* ======================================================================
-       UPDATE & SNOOZE LOGIC
-       ====================================================================== */
-    let currentUpdateTarget = null; // 'self' or 'parent'
-    let selfTimer, parentTimer;
-    const btnUpdate = document.getElementById('critical-update-btn');
-    const modalOverlay = document.getElementById('update-modal-overlay');
-    const modalTitle = document.getElementById('update-dialog-title');
-
-    function triggerUpdateDialog(target) {
-        currentUpdateTarget = target;
-        btnUpdate.classList.add('update-pulsate');
-        modalTitle.innerText = target === 'self' ? "FVNCTIONS UPDATE" : "MAINFRAME UPDATE";
-        modalOverlay.style.display = 'flex';
-    }
-
-    function applySnooze() {
-        const wheel = document.getElementById('snooze-wheel');
-        const dateInput = document.getElementById('snooze-date');
-        let delayMs = 15 * 60 * 1000; // Default 15 min
-
-        if (dateInput.value) {
-            // Selected a specific date. Arbitrarily clear state, 
-            // In a real env, we'd calculate ms until that date.
-            delayMs = 24 * 60 * 60 * 1000; // Mocking 1 day delay for demo
-            dateInput.value = ""; // reset
-        } else if (wheel.value === 'indefinite') {
-            delayMs = 999 * 24 * 60 * 60 * 1000; // Effectively indefinite
-        } else {
-            delayMs = parseInt(wheel.value) * 60 * 1000;
-        }
-
-        modalOverlay.style.display = 'none';
-        btnUpdate.classList.remove('update-pulsate');
-        
-        // Re-arm timer based on target
-        if (currentUpdateTarget === 'self') {
-            clearTimeout(selfTimer);
-            selfTimer = setTimeout(() => triggerUpdateDialog('self'), delayMs);
-        } else {
-            clearTimeout(parentTimer);
-            parentTimer = setTimeout(() => triggerUpdateDialog('parent'), delayMs);
-        }
-    }
-
-    function executeSync() {
-        modalOverlay.style.display = 'none';
-        if (currentUpdateTarget === 'self') {
-            window.location.reload();
-        } else {
-            try {
-                window.parent.location.reload();
-            } catch (e) {
-                window.location.reload(); // Fallback if cross-origin policy blocks
-            }
-        }
-    }
-
-    window.addEventListener('load', () => {
-        // FVNCTIONS UPDATE (Self) - After 4 seconds
-        selfTimer = setTimeout(() => {
-            triggerUpdateDialog('self');
-        }, 4000);
-
-        // MAINFRAME UPDATE (Parent) - After 60 seconds (1 minute)
-        parentTimer = setTimeout(() => {
-            // Check if FVNCTIONS modal is currently active, to not override it visually
-            if(modalOverlay.style.display !== 'flex') {
-                 triggerUpdateDialog('parent');
-            }
-        }, 60000);
-    });
-
-
-    /* ======================================================================
-       REBOOT SEQUENCE (OBSIDIAN BUTTON)
-       ====================================================================== */
-    let abortTimerInterval;
-    function initiateRebootSequence() {
-        // Stop any pending update alerts since user manually triggered reboot
-        btnUpdate.classList.remove('update-pulsate');
-        modalOverlay.style.display = 'none';
-        
-        const abortBtn = document.getElementById('abort-btn');
-        abortBtn.style.display = 'block';
-        
-        let timeLeft = 5;
-        abortBtn.innerText = `ABORT (${timeLeft})`;
-        
-        abortTimerInterval = setInterval(() => {
-            timeLeft--;
-            if (timeLeft > 0) {
-                abortBtn.innerText = `ABORT (${timeLeft})`;
-            } else {
-                clearInterval(abortTimerInterval);
-                abortBtn.style.display = 'none';
-                triggerGlitchAndReload();
-            }
-        }, 1000);
-    }
-
-    function cancelReboot() {
-        clearInterval(abortTimerInterval);
-        document.getElementById('abort-btn').style.display = 'none';
-        showToast("Reboot sequence aborted.");
-    }
-
-    function triggerGlitchAndReload() {
-        document.body.classList.add('glitch-active');
-        setTimeout(() => {
-            const overlay = document.getElementById('cinematic-overlay');
-            overlay.style.display = 'flex';
-            overlay.classList.add('shut-off');
-            
-            setTimeout(() => {
-                overlay.classList.remove('shut-off');
-                overlay.style.opacity = '1';
-                overlay.style.background = 'black';
-                document.getElementById('alien-screen').style.display = 'block';
-                
-                // Final Escape: Target the Parent Frame
-                setTimeout(() => {
-                    try {
-                        window.parent.location.reload(); 
-                    } catch (e) {
-                        window.location.reload(); // Fallback
-                    }
-                }, 7000);
-            }, 500);
-        }, 1500);
-    }
-
-
-    /* ======================================================================
-       CORE CRF FORM LOGIC (Merged)
-       ====================================================================== */
+    // --- Data Mappings ---
     const requestMap = {
         loan: "Borrower requested Loan Agreement",
         installer: "Borrower requested Installer's Agreement",
@@ -871,12 +859,196 @@
     const blockNAList = ["loan", "installer", "transfer"];
     const forceE1OnlyList = ["loan", "installer", "transfer"];
 
-    function addRequestRow() {
-        const container = document.getElementById('requestContainer');
-        if (container.querySelectorAll('.request-item').length >= 3) {
-            showToast("Maximum of 3 requests allowed.", true);
+
+    // --- CHRONOMETER & SYNC LOGIC ---
+    let uptimeSelf = 0;
+    let uptimeParentPre = 0;
+    let uptimeParentPost = 0; // Keeping structure logic ready
+    let limitSelf = 10800;
+    let limitParentPre = 0;
+    let ticker;
+    
+    let abortInterval;
+    let dialogActive = false;
+    let activeDialogType = ""; // "self" or "parent"
+
+    function padZero(num) { return num < 10 ? '0'+num : num; }
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60);
+        let s = sec % 60;
+        return padZero(m) + ":" + padZero(s);
+    }
+
+    function updateChronometers() {
+        if(dialogActive) return; // Freeze timers while dialog is open
+
+        uptimeSelf++;
+        uptimeParentPre++; // Assuming linear tracking for demonstration
+        
+        document.getElementById('val-self').innerText = formatTime(uptimeSelf);
+        document.getElementById('val-parent-pre').innerText = formatTime(uptimeParentPre);
+        
+        const syncBtn = document.getElementById('main-sync-btn');
+        
+        // Parent Pre-login > 29s logic
+        if (uptimeParentPre > limitParentPre) {
+            if(!syncBtn.classList.contains('pulsate-red')) {
+                syncBtn.classList.add('pulsate-red');
+            }
+            openSyncDialog("MAINFRAME SYNC");
             return;
         }
+        
+        // Self > 10s logic
+        if (uptimeSelf > limitSelf && uptimeParentPre <= limitParentPre) {
+            openSyncDialog("SUBSYS SYNC");
+            return;
+        }
+    }
+
+    function openSyncDialog(title) {
+        dialogActive = true;
+        document.getElementById('dialog-title').innerText = title;
+        activeDialogType = title === "MAINFRAME SYNC" ? "parent" : "self";
+        
+        document.getElementById('diag-pre').innerText = "Parent Pre-Login: " + formatTime(uptimeParentPre) + " / " + formatTime(limitParentPre);
+        document.getElementById('diag-post').innerText = "Parent Post-Login: --:--";
+        document.getElementById('diag-self').innerText = "Self Uptime: " + formatTime(uptimeSelf) + " / " + formatTime(limitSelf);
+        
+        document.getElementById('dialog-overlay').style.display = 'flex';
+    }
+
+    // Wheel Interaction
+    const wheelItems = document.querySelectorAll('.wheel-item');
+    let snoozeSeconds = 43200; // default 12 hours next shift
+    wheelItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            wheelItems.forEach(wi => wi.classList.remove('active'));
+            e.target.classList.add('active');
+            snoozeSeconds = parseInt(e.target.getAttribute('data-val'));
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    });
+
+    function applySnooze() {
+        if(snoozeSeconds > 0) {
+            if(activeDialogType === "parent") {
+                limitParentPre += snoozeSeconds;
+                document.getElementById('main-sync-btn').classList.remove('pulsate-red');
+            } else {
+                limitSelf += snoozeSeconds;
+            }
+            showToast("Snoozed for " + (snoozeSeconds/60) + " minutes.");
+        }
+        document.getElementById('dialog-overlay').style.display = 'none';
+        dialogActive = false;
+    }
+
+    function triggerManualSync() {
+        document.getElementById('dialog-overlay').style.display = 'none';
+        document.getElementById('abort-overlay').style.display = 'flex';
+        
+        let timeLeft = 5000;
+        const valSpan = document.getElementById('abort-timer-val');
+        
+        abortInterval = setInterval(() => {
+            timeLeft -= 100;
+            valSpan.innerText = (timeLeft / 1000).toFixed(1);
+            if (timeLeft <= 0) {
+                clearInterval(abortInterval);
+                executeFinalSync();
+            }
+        }, 100);
+    }
+
+    function abortSyncSequence() {
+        clearInterval(abortInterval);
+        document.getElementById('abort-overlay').style.display = 'none';
+        dialogActive = false;
+        showToast("Sync Sequence Aborted.", true);
+    }
+
+    function executeFinalSync() {
+        document.getElementById('abort-overlay').style.display = 'none';
+        
+        if (activeDialogType === "self") {
+            // Self reload only, no twitching
+            window.location.reload();
+        } else {
+            // Mainframe sync -> Parent reload + twitching
+            document.body.classList.add('glitch-active');
+            setTimeout(() => {
+                const overlay = document.getElementById('cinematic-overlay');
+                overlay.style.display = 'flex';
+                overlay.classList.add('shut-off');
+                
+                setTimeout(() => {
+                    overlay.classList.remove('shut-off');
+                    overlay.style.opacity = '1';
+                    overlay.style.background = 'black';
+                    document.getElementById('alien-screen').style.display = 'block';
+                    
+                    // Final Escape: Target the Parent Frame (2 Seconds as requested)
+                    setTimeout(() => {
+                        try {
+                            window.parent.location.href = 'index.html'; 
+                        } catch (e) {
+                            window.location.href = 'index.html'; // Fallback
+                        }
+                    }, 2000); 
+                }, 500);
+            }, 1500);
+        }
+    }
+
+    window.addEventListener('load', () => {
+        ticker = setInterval(updateChronometers, 1000);
+    });
+
+    // --- NOTIFICATION STACKING LOGIC ---
+    let toastCount = 0;
+    const MAX_TOASTS = 3;
+
+    function showToast(message, isError = false) {
+        const container = document.getElementById('toast-container');
+        
+        // Remove oldest if exceeding max
+        if (container.children.length >= MAX_TOASTS) {
+            const oldest = container.firstChild;
+            oldest.classList.add('removing');
+            setTimeout(() => {
+                if(oldest.parentNode) oldest.parentNode.removeChild(oldest);
+            }, 400);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.id = 'toast-' + toastCount++;
+        
+        if (isError) {
+            toast.style.background = 'rgba(139, 0, 0, 0.9)'; 
+            toast.style.borderColor = '#ff4d4d';
+        }
+        
+        toast.innerText = message;
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add('removing');
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 400);
+            }
+        }, 4000);
+    }
+
+    // --- ORIGINAL CORE FUNCTIONS ---
+
+    function addRequestRow() {
+        const container = document.getElementById('requestContainer');
+        if (container.querySelectorAll('.request-item').length >= 3) return;
         const rowId = 'row-' + Date.now();
         const newItem = document.createElement('div');
         newItem.className = 'request-item';
@@ -906,6 +1078,12 @@
         if (!el) return;
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
+    }
+
+    function refreshIframe() {
+        if(confirm("Are you sure you want to refresh? All unsaved data will be lost.")) {
+            window.location.reload();
+        }
     }
 
     function syncExplanations(changedSelect) {
@@ -1105,49 +1283,21 @@
             ta.style.display = 'none';
         });
 
-        selects.forEach(s => {
-            s.setAttribute('data-original-style', s.style.cssText);
-            s.style.appearance = 'none';
-            s.style.webkitAppearance = 'none';
-            s.style.lineHeight = '1.2';
-            s.style.paddingTop = '4px'; 
-            s.style.paddingBottom = '4px';
-        });
-
         try {
-            const canvas = await html2canvas(area, { 
-                scale: 1, 
-                backgroundColor: null,
-                logging: false,
-                useCORS: true,
-                onclone: (clonedDoc) => {
-                    const clonedArea = clonedDoc.getElementById('captureArea');
-                    clonedArea.style.overflow = 'visible';
-                }
-            });
+            const canvas = await html2canvas(area, { scale: 1, backgroundColor: null });
             canvas.toBlob(blob => {
-                if (!blob) {
-                    showToast("❌ Blob creation failed.", true);
-                    return;
-                }
                 const item = new ClipboardItem({ "image/png": blob });
                 navigator.clipboard.write([item]);
-                showToast("✅ Captured! Now go to email and paste it.");
+                showToast("✅ Captured! Ready to paste.");
             });
         } catch (e) { 
-            console.error(e);
             showToast("❌ Error capturing image.", true); 
         } finally {
             textareas.forEach(ta => { ta.style.display = ''; });
             replacements.forEach(pair => { pair.div.remove(); });
-            selects.forEach(s => {
-                s.style.cssText = s.getAttribute('data-original-style');
-                s.removeAttribute('data-original-style');
-            });
         }
     }
 
-    // Default initialization
     document.body.classList.add('dark-mode');
     naBtn.classList.add('selected');
 </script>
