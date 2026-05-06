@@ -736,6 +736,7 @@
     <span style="font-size:7px">SCRIPTS</span>
 </button>
 <button class="side-btn" onclick="toggleWidget('surepay-widget')">
+    <span class="side-btn-icon">💳</span>
     <span style="font-size:7px">SP</span>
 </button>
 
@@ -1607,6 +1608,30 @@ function snoozeToast() {
 }
 
 </script>
+
+<!-- SCRIPTS MODAL -->
+<div id="scripts-widget" class="floating-widget" style="width: 450px; height: 550px; top: 80px; left: 100px;">
+    <div class="widget-header" onmousedown="dragWidget(event, 'scripts-widget')">
+        <span>SYS_SCRIPTS_V4</span>
+        <span class="widget-close" onclick="toggleWidget('scripts-widget')">X</span>
+    </div>
+    <div class="nav-bar">
+        <button class="action-btn" onclick="document.getElementById('scripts-frame').contentWindow.location.reload();">⟳ RELOAD_LOCAL</button>
+    </div>
+    <iframe id="scripts-frame" src="scripts.html" style="flex-grow:1; border:none; background:var(--void);"></iframe>
+</div>
+
+<!-- SUREPAY (SP) MODAL -->
+<div id="surepay-widget" class="floating-widget" style="width: 400px; height: 600px; top: 120px; left: 150px;">
+    <div class="widget-header" onmousedown="dragWidget(event, 'surepay-widget')">
+        <span>SUREPAY_GATEWAY</span>
+        <span class="widget-close" onclick="toggleWidget('surepay-widget')">X</span>
+    </div>
+    <div class="nav-bar">
+        <button class="action-btn" onclick="document.getElementById('surepay-frame').contentWindow.location.reload();">⟳ RELOAD_LOCAL</button>
+    </div>
+    <iframe id="surepay-frame" src="surepay.html" style="flex-grow:1; border:none; background:var(--void);"></iframe>
+</div>
 
 <div id="slack-widget" class="floating-widget" style="width: 400px; height: 500px; top: 150px; left: 400px;">
     <div class="widget-header" onmousedown="dragWidget(event, 'slack-widget')">
